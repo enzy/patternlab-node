@@ -11,11 +11,7 @@
     "grunt-contrib-clean": "~0.5.0",
     "grunt-contrib-concat": "~0.3.0",
     "grunt-contrib-nodeunit": "~0.3.0",
-    "grunt-contrib-connect": "^0.8.0",
-    "mustache": "~0.8.1",
-    "matchdep": "~0.3.0",
-    "fs-extra": "^0.10.0",
-    "diveSync": "^0.2.1"
+    "grunt-contrib-connect": "^0.8.0"
   },
   "keywords": [
     "Pattern Lab",
@@ -37,6 +33,10 @@
     "node": ">=0.1"
   },
   "dependencies": {
-    "extend": "^2.0.0"
+    "extend": "^2.0.0",
+    "mustache": "~0.8.1",
+    "matchdep": "~0.3.0",
+    "fs-extra": "^0.10.0",
+    "diveSync": "^0.2.1"
   }
 }
