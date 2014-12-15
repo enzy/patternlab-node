@@ -9,7 +9,8 @@
  */
 
 var patternlab_engine = function(){
-	var path = require('path'),
+	var extend = require('extend'),
+		path = require('path'),
 		fs = require('fs-extra'),
 		diveSync = require('diveSync'),
 		mustache = require('mustache'),
@@ -47,6 +48,10 @@ var patternlab_engine = function(){
 			console.log('writing patternlab debug file to ./patternlab.json');
 			fs.outputFileSync('./patternlab.json', JSON.stringify(patternlab, null, 3));
 		}
+	}
+
+	function configure(config) {
+		patternlab.config = extend(patternlab.config, config);
 	}
 
 	function buildPatterns(callback){
@@ -347,6 +352,9 @@ var patternlab_engine = function(){
 	return {
 		version: function(){
 			return getVersion();
+		},
+		configure: function(config) {
+			configure(config);
 		},
 		build: function(){
 			buildPatterns();
