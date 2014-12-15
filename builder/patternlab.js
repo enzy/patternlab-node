@@ -19,8 +19,8 @@ var patternlab_engine = function(){
 		lh = require('./lineage_hunter'),
 		patternlab = {};
 
-	patternlab.package =fs.readJSONSync('./package.json');
-	patternlab.config = fs.readJSONSync('./config.json');
+	patternlab.package = fs.readJSONSync(__dirname + '/../package.json');
+	patternlab.config = fs.readJSONSync(__dirname + '/../config.json');
 
 	function getVersion() {
 		console.log(patternlab.package.version);
@@ -31,7 +31,7 @@ var patternlab_engine = function(){
 		console.log('===============================');
 		console.log('Command Line Arguments');
 		console.log('patternlab:only_patterns');
-		console.log(' > Compiles the patterns only, outputting to ./public/patterns');
+		console.log(' > Compiles the patterns only, outputting to ' + patternlab.config.patterns.public);
 		console.log('patternlab:v');
 		console.log(' > Retrieve the version of patternlab-node you have installed');
 		console.log('patternlab:help');
@@ -50,16 +50,15 @@ var patternlab_engine = function(){
 	}
 
 	function buildPatterns(callback){
-		patternlab.data = fs.readJSONSync('./source/_data/data.json');
-		patternlab.listitems = fs.readJSONSync('./source/_data/listitems.json');
-		patternlab.header = fs.readFileSync('./source/_patternlab-files/pattern-header-footer/header.html', 'utf8');
-		patternlab.footer = fs.readFileSync('./source/_patternlab-files/pattern-header-footer/footer.html', 'utf8');
+		patternlab.data = fs.readJSONSync(patternlab.config.patterns.data);
+		patternlab.listitems = fs.readJSONSync(patternlab.config.patterns.listitems);
+		patternlab.header = fs.readFileSync(path.resolve(patternlab.config.styleguide, 'pattern-header-footer/header.html'), 'utf8');
+		patternlab.footer = fs.readFileSync(path.resolve(patternlab.config.styleguide, 'pattern-header-footer/footer.html'), 'utf8');
 		patternlab.patterns = [];
 		patternlab.patternIndex = [];
 		patternlab.partials = {};
 
-		diveSync('./source/_patterns', function(err, file){
-
+		diveSync(patternlab.config.patterns.source, function(err, file){
 			//log any errors
 			if(err){
 				console.log(err);
@@ -67,11 +66,11 @@ var patternlab_engine = function(){
 			}
 
 			//extract some information
-			var abspath = file.substring(2);
-			var subdir = path.dirname(path.relative('./source/_patterns', file));
+			var abspath = path.resolve(file);
+			var subdir = path.dirname(path.relative(patternlab.config.patterns.source, file));
 			var filename = path.basename(file);
 
-			//check if the pattern already exists.  
+			//check if the pattern already exists.
 			var patternName = filename.substring(0, filename.indexOf('.')),
 				patternIndex = patternlab.patternIndex.indexOf(subdir + '-' +  patternName),
 				currentPattern,
@@ -84,7 +83,7 @@ var patternlab_engine = function(){
 
 			//make a new Pattern Object
 			var flatPatternName = subdir.replace(/[\/\\]/g, '-') + '-' + patternName;
-			
+
 			flatPatternName = flatPatternName.replace(/\\/g, '-');
 			currentPattern = new of.oPattern(flatPatternName, subdir, filename, {});
 			currentPattern.patternName = patternName.substring(patternName.indexOf('-') + 1);
@@ -114,7 +113,7 @@ var patternlab_engine = function(){
 			}else{ // Pass global patternlab data
 				currentPattern.patternPartial = renderPattern(currentPattern.template, patternlab.data, patternlab.partials);
 			}
-			
+
 			//write the compiled template to the public patterns directory
 			flatPatternPath = currentPattern.name + '/' + currentPattern.name + '.html';
 			currentPattern.patternLink = flatPatternPath;
@@ -126,7 +125,7 @@ var patternlab_engine = function(){
 			//add footer info before writing
 			var currentPatternFooter = renderPattern(patternlab.footer, currentPattern);
 
-			fs.outputFileSync('./public/patterns/' + flatPatternPath, patternlab.header + currentPattern.patternPartial + currentPatternFooter);
+			fs.outputFileSync(path.resolve(patternlab.config.patterns.public, 'patterns/' + flatPatternPath), patternlab.header + currentPattern.patternPartial + currentPatternFooter);
 
 			//add as a partial in case this is referenced later.  convert to syntax needed by existing patterns
 			var sub = subdir.substring(subdir.indexOf('-') + 1);
@@ -142,7 +141,7 @@ var patternlab_engine = function(){
 
 				//done
 			}
-			
+
 			//add to patternlab arrays so we can look these up later.  this could probably just be an object.
 			patternlab.patternIndex.push(currentPattern.name);
 			patternlab.patterns.push(currentPattern);
@@ -161,13 +160,13 @@ var patternlab_engine = function(){
 		media_hunter.find_media_queries(patternlab);
 
 		//build the styleguide
-		var styleguideTemplate = fs.readFileSync('./source/_patternlab-files/styleguide.mustache', 'utf8');
+		var styleguideTemplate = fs.readFileSync(path.resolve(patternlab.config.styleguide, 'styleguide.mustache'), 'utf8');
 		var styleguideHtml = renderPattern(styleguideTemplate, {partials: patternlab.patterns});
-		fs.outputFileSync('./public/styleguide/html/styleguide.html', styleguideHtml);
+		fs.outputFileSync(path.resolve(patternlab.config.patterns.public, 'styleguide/html/styleguide.html'), styleguideHtml);
 
 		//build the patternlab website
-		var patternlabSiteTemplate = fs.readFileSync('./source/_patternlab-files/index.mustache', 'utf8');
-		
+		var patternlabSiteTemplate = fs.readFileSync(path.resolve(patternlab.config.styleguide, 'index.mustache'), 'utf8');
+
 		//loop through all patterns.  deciding to do this separate from the recursion, even at a performance hit, to attempt to separate the tasks of styleguide creation versus site menu creation
 		for(var i = 0; i < patternlab.patterns.length; i++){
 			var pattern = patternlab.patterns[i];
@@ -209,9 +208,9 @@ var patternlab_engine = function(){
 
 				//if it is flat - we should not add the pattern to patternPaths
 				if(flatPatternItem){
-					
+
 					bucket.patternItems.push(navSubItem);
-					
+
 					//add to patternPaths
 					addToPatternPaths(bucketName, pattern);
 
@@ -298,24 +297,24 @@ var patternlab_engine = function(){
 
 		//the patternlab site requires a lot of partials to be rendered.
 		//patternNav
-		var patternNavTemplate = fs.readFileSync('./source/_patternlab-files/partials/patternNav.mustache', 'utf8');
+		var patternNavTemplate = fs.readFileSync(path.resolve(patternlab.config.styleguide, 'partials/patternNav.mustache'), 'utf8');
 		var patternNavPartialHtml = renderPattern(patternNavTemplate, patternlab);
 
 		//ishControls
-		var ishControlsTemplate = fs.readFileSync('./source/_patternlab-files/partials/ishControls.mustache', 'utf8');
+		var ishControlsTemplate = fs.readFileSync(path.resolve(patternlab.config.styleguide, 'partials/ishControls.mustache'), 'utf8');
 		patternlab.config.mqs = patternlab.mediaQueries;
 		var ishControlsPartialHtml = renderPattern(ishControlsTemplate, patternlab.config);
 
 		//patternPaths
-		var patternPathsTemplate = fs.readFileSync('./source/_patternlab-files/partials/patternPaths.mustache', 'utf8');
+		var patternPathsTemplate = fs.readFileSync(path.resolve(patternlab.config.styleguide, 'partials/patternPaths.mustache'), 'utf8');
 		var patternPathsPartialHtml = renderPattern(patternPathsTemplate, {'patternPaths': JSON.stringify(patternlab.patternPaths)});
 
 		//viewAllPaths
-		var viewAllPathsTemplate = fs.readFileSync('./source/_patternlab-files/partials/viewAllPaths.mustache', 'utf8');
+		var viewAllPathsTemplate = fs.readFileSync(path.resolve(patternlab.config.styleguide, 'partials/viewAllPaths.mustache'), 'utf8');
 		var viewAllPathersPartialHtml = renderPattern(viewAllPathsTemplate, {'viewallpaths': JSON.stringify(patternlab.viewAllPaths)});
 
 		//websockets
-		var websocketsTemplate = fs.readFileSync('./source/_patternlab-files/partials/websockets.mustache', 'utf8');
+		var websocketsTemplate = fs.readFileSync(path.resolve(patternlab.config.styleguide, 'partials/websockets.mustache'), 'utf8');
 		patternlab.contentsyncport = patternlab.config.contentSyncPort;
 		patternlab.navsyncport = patternlab.config.navSyncPort;
 
@@ -329,7 +328,7 @@ var patternlab_engine = function(){
 			'websockets': websocketsPartialHtml,
 			'viewAllPaths': viewAllPathersPartialHtml
 		});
-		fs.outputFileSync('./public/index.html', patternlabSiteHtml);
+		fs.outputFileSync(path.resolve(patternlab.config.patterns.public, 'index.html'), patternlabSiteHtml);
 	}
 
 	function renderPattern(name, data, partials) {

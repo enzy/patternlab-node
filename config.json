@@ -1,8 +1,11 @@
  {
  	"patterns" : {
- 		"source" : "./source/_patterns/",
- 		"public" : "./public/patterns/"
+ 		"source" : "source/_patterns",
+ 		"public" : "public",
+ 		"data": "source/_data/data.json",
+ 		"listitems": "source/_data/listitems.json"
  	},
+ 	"styleguide": "source/_patternlab-files",
  	"ignored-extensions" : ["scss", "DS_Store", "less"],
  	"ignored-directories" : ["scss"],
  	"contentSyncPort" : 8002,
