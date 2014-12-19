@@ -190,8 +190,9 @@ var patternlab_engine = function(){
 				//add paternPath
 				patternlab.patternPaths[bucketName] = {};
 
-				//get the navItem
+				//get the navItem, ignore sublevels
 				var navItemName = pattern.subdir.split('-').pop();
+				navItemName = navItemName.split('/')[0];
 
 				//get the navSubItem
 				var navSubItemName = pattern.patternName.replace(/-/g, ' ');
@@ -245,8 +246,9 @@ var patternlab_engine = function(){
 				//find the bucket
 				var bucket = patternlab.buckets[bucketIndex];
 
-				//get the navItem
+				//get the navItem, ignore sublevels
 				var navItemName = pattern.subdir.split('-').pop();
+				navItemName = navItemName.split('/')[0];
 
 				//get the navSubItem
 				var navSubItemName = pattern.patternName.replace(/-/g, ' ');
