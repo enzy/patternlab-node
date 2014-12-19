@@ -85,6 +85,10 @@ var patternlab_engine = function(){
 			if(filename.charAt(0) === '_' || path.extname(filename) === '.json' || filename.charAt(0) === '.'){
 				return;
 			}
+			// Pass throught only mustache and html files
+			if(path.extname(filename) !== '.mustache' && path.extname(filename) !== '.html'){
+				return;
+			}
 
 			//make a new Pattern Object
 			var flatPatternName = subdir.replace(/[\/\\]/g, '-') + '-' + patternName;
