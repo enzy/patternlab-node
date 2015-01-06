@@ -1,10 +1,10 @@
-/* 
- * patternlab-node - v0.1.6 - 2014 
- * 
+/*
+ * patternlab-node - v0.1.6 - 2014
+ *
  * Brian Muenzenmeyer, and the web community.
- * Licensed under the MIT license. 
- * 
- * Many thanks to Brad Frost and Dave Olsen for inspiration, encouragement, and advice. 
+ * Licensed under the MIT license.
+ *
+ * Many thanks to Brad Frost and Dave Olsen for inspiration, encouragement, and advice.
  *
  */
 
@@ -192,7 +192,7 @@ var patternlab_engine = function(){
 
 				//get the navItem, ignore sublevels
 				var navItemName = pattern.subdir.split('-').pop();
-				navItemName = navItemName.split('/')[0];
+				navItemName = navItemName.split(path.sep)[0];
 
 				//get the navSubItem
 				var navSubItemName = pattern.patternName.replace(/-/g, ' ');
@@ -248,7 +248,7 @@ var patternlab_engine = function(){
 
 				//get the navItem, ignore sublevels
 				var navItemName = pattern.subdir.split('-').pop();
-				navItemName = navItemName.split('/')[0];
+				navItemName = navItemName.split(path.sep)[0];
 
 				//get the navSubItem
 				var navSubItemName = pattern.patternName.replace(/-/g, ' ');
