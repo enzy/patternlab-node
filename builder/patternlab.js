@@ -87,7 +87,7 @@ var patternlab_engine = function(){
 				return;
 			}
 			// Pass throught only mustache and html files
-			if(path.extname(filename) !== '.mustache' && path.extname(filename) !== '.html'){
+			if(path.extname(filename) !== '.mustache' && path.extname(filename) !== '.html' && path.extname(filename) !== '.hbs'){
 				return;
 			}
 
