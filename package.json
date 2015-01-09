@@ -33,10 +33,11 @@
     "node": ">=0.1"
   },
   "dependencies": {
+    "diveSync": "^0.2.1",
     "extend": "^2.0.0",
-    "mustache": "~0.8.1",
-    "matchdep": "~0.3.0",
     "fs-extra": "^0.10.0",
-    "diveSync": "^0.2.1"
+    "handlebars": "^2.0.0",
+    "matchdep": "~0.3.0",
+    "mustache": "~0.8.1"
   }
 }

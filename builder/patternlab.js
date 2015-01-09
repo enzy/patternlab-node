@@ -13,7 +13,7 @@ var patternlab_engine = function(){
 		path = require('path'),
 		fs = require('fs-extra'),
 		diveSync = require('diveSync'),
-		mustache = require('mustache'),
+		handlebars = require('handlebars'),
 		of = require('./object_factory'),
 		pa = require('./pattern_assembler'),
 		mh = require('./media_hunter'),
@@ -342,12 +342,14 @@ var patternlab_engine = function(){
 		fs.outputFileSync(path.resolve(patternlab.config.patterns.public, 'index.html'), patternlabSiteHtml);
 	}
 
-	function renderPattern(name, data, partials) {
-		if(partials) {
-			return mustache.render(name, data, partials);
-		}else{
-			return mustache.render(name, data);
+	function renderPattern(template, data, partials) {
+		var template = handlebars.compile(template);
+
+		if(partials){
+			handlebars.registerPartial(partials);
 		}
+
+		return template(data);
 	}
 
 	function addToPatternPaths(bucketName, pattern){
