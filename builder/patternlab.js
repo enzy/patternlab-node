@@ -1,10 +1,10 @@
-/*
- * patternlab-node - v0.1.6 - 2014
- *
+/* 
+ * patternlab-node - v0.1.7 - 2015 
+ * 
  * Brian Muenzenmeyer, and the web community.
- * Licensed under the MIT license.
- *
- * Many thanks to Brad Frost and Dave Olsen for inspiration, encouragement, and advice.
+ * Licensed under the MIT license. 
+ * 
+ * Many thanks to Brad Frost and Dave Olsen for inspiration, encouragement, and advice. 
  *
  */
 
@@ -18,6 +18,7 @@ var patternlab_engine = function(){
 		pa = require('./pattern_assembler'),
 		mh = require('./media_hunter'),
 		lh = require('./lineage_hunter'),
+		pe = require('./pattern_exporter')
 		patternlab = {};
 
 	patternlab.package = fs.readJSONSync(__dirname + '/../package.json');
@@ -75,7 +76,7 @@ var patternlab_engine = function(){
 			var subdir = path.dirname(path.relative(patternlab.config.patterns.source, file));
 			var filename = path.basename(file);
 
-			//check if the pattern already exists.
+			//check if the pattern already exists.  
 			var patternName = filename.substring(0, filename.indexOf('.')),
 				patternIndex = patternlab.patternIndex.indexOf(subdir + '-' +  patternName),
 				currentPattern,
@@ -92,11 +93,12 @@ var patternlab_engine = function(){
 
 			//make a new Pattern Object
 			var flatPatternName = subdir.replace(/[\/\\]/g, '-') + '-' + patternName;
-
+			
 			flatPatternName = flatPatternName.replace(/\\/g, '-');
 			currentPattern = new of.oPattern(flatPatternName, subdir, filename, {});
 			currentPattern.patternName = patternName.substring(patternName.indexOf('-') + 1);
 			currentPattern.data = null;
+			currentPattern.key = currentPattern.patternGroup + '-' + currentPattern.patternName;
 
 			//see if this file has a state
 			if(patternlab.config.patternStates[currentPattern.patternName]){
@@ -122,19 +124,12 @@ var patternlab_engine = function(){
 			}else{ // Pass global patternlab data
 				currentPattern.patternPartial = renderPattern(currentPattern.template, patternlab.data, patternlab.partials);
 			}
-
-			//write the compiled template to the public patterns directory
-			flatPatternPath = currentPattern.name + '/' + currentPattern.name + '.html';
-			currentPattern.patternLink = flatPatternPath;
+			
+			currentPattern.patternLink = currentPattern.name + '/' + currentPattern.name + '.html';;
 
 			//find pattern lineage
 			var lineage_hunter = new lh();
 			lineage_hunter.find_lineage(currentPattern, patternlab);
-
-			//add footer info before writing
-			var currentPatternFooter = renderPattern(patternlab.footer, currentPattern);
-
-			fs.outputFileSync(path.resolve(patternlab.config.patterns.public, 'patterns/' + flatPatternPath), patternlab.header + currentPattern.patternPartial + currentPatternFooter);
 
 			//add as a partial in case this is referenced later.  convert to syntax needed by existing patterns
 			var sub = subdir.substring(subdir.indexOf('-') + 1);
@@ -150,11 +145,26 @@ var patternlab_engine = function(){
 
 				//done
 			}
-
+			
 			//add to patternlab arrays so we can look these up later.  this could probably just be an object.
 			patternlab.patternIndex.push(currentPattern.name);
 			patternlab.patterns.push(currentPattern);
 		});
+
+		//render all patterns last, so lineageR works
+		patternlab.patterns.forEach(function(pattern, index, patterns){
+
+			//add footer info before writing
+			var patternFooter = renderPattern(patternlab.footer, pattern);
+
+			//write the compiled template to the public patterns directory
+			fs.outputFileSync(path.resolve(patternlab.config.patterns.public, 'patterns/' + pattern.patternLink), patternlab.header + pattern.patternPartial + patternFooter);
+
+		});
+
+		//export patterns if necessary
+		var pattern_exporter = new pe();
+		pattern_exporter.export_patterns(patternlab);
 
 	}
 
@@ -175,7 +185,7 @@ var patternlab_engine = function(){
 
 		//build the patternlab website
 		var patternlabSiteTemplate = fs.readFileSync(path.resolve(patternlab.config.styleguide, 'index.mustache'), 'utf8');
-
+		
 		//loop through all patterns.  deciding to do this separate from the recursion, even at a performance hit, to attempt to separate the tasks of styleguide creation versus site menu creation
 		for(var i = 0; i < patternlab.patterns.length; i++){
 			var pattern = patternlab.patterns[i];
@@ -218,9 +228,9 @@ var patternlab_engine = function(){
 
 				//if it is flat - we should not add the pattern to patternPaths
 				if(flatPatternItem){
-
+					
 					bucket.patternItems.push(navSubItem);
-
+					
 					//add to patternPaths
 					addToPatternPaths(bucketName, pattern);
 
